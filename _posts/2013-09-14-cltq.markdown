@@ -1,0 +1,242 @@
+---
+layout: post
+title: "The cltq story"
+date: 2013-09-17 23:16
+comments: true
+tags: optimization
+---
+
+Stare at the C code below and guess what could go wrong.
+It's originally from a CPU simulator,
+implementing a 16×16⇒32 unsigned multiplication.
+Thanks to Mattias Engdegård at Intel for sharing the story.
+
+``` c
+uint64_t mul(uint16_t a, uint16_t b)
+{
+	uint32_t c = a * b;
+	return c;
+}
+```
+
+To be more specific, let's assume x86-64.
+Is it possible that for some `a` and `b`,
+the result of `mul(a, b)` changes when compiling the code with
+different optimization levels using gcc?
+
+Spoiler alert: here's what will happen.
+When compiling the code with `gcc -O0`, you'll get:
+
+	$ ./mul 65535 65535
+	65535 * 65535 = 4294836225 (0xfffe0001)
+
+Hope you're not expecting the multiplication to overflow and output
+`1` here, which would be the case in Go but not in C/C++.
+We'll come back to that later.
+
+With `gcc -O2`, you'll get this:
+
+	$ ./mul 65535 65535
+	65535 * 65535 = 18446744073709420545 (0xfffffffffffe0001)
+
+This doesn't look pretty, does it?
+And here's what gcc 4.7.3/4.8.1 actually emits with `-O2`:
+
+```nasm
+movzwl  %di, %eax       ; zero-extend %di (a) to %eax
+movzwl  %si, %esi       ; zero-extend %si (b) to %esi
+imull   %esi, %eax      ; store their product in %eax
+cltq                    ; sign-extend %eax to %rax
+ret
+```
+
+Wait, the C code uses _unsigned_ integers only.
+What's this sign-extension instruction `cltq`
+(`cdqe` in Intel/AMD manuals) doing here?
+Is this a gcc bug?
+
+Actually,
+even though emitting `cltq` is odd,
+it doesn't violate the C standard.
+There's a very subtle bug in the `mul` function.
+I'll show how gcc emits `cltq` by exploiting two odd C
+rules, _integer promotions_ and _undefined behavior_, and discuss
+possible ways to avoid/detect such problems.
+
+How gcc emits cltq
+------------------
+
+To see what gcc does, invoke it with `-fdump-tree-all` to dump the
+IR after each pass.
+Here's the (simplified) output after _vrp_ (value range propagation).
+
+``` c
+mul (uint16_t a, uint16_t b) // a, b: VARYING
+{
+  uint32_t c;
+  int _2;
+  int _4;
+  int _5;
+  uint64_t _7;
+
+  <bb2>:
+  _2 = (int) a;              // _2  : [0, 65535]
+  _4 = (int) b;              // _4  : [0, 65535]
+  _5 = _2 * _4;              // _5  : [0, +INF(OVF)]
+  c = (uint32_t) _5;         // c   : [0, +INF]
+  _7 = (uint64_t) _5;        // _7  : [0, 4294967295]
+  return _7;
+}
+```
+
+First of all, `a` and `b` are of type `uint16_t`,
+which is smaller than `int` (assuming 32-bit `int`).
+According to the rule of integer promotions (C11, 6.3.1.1/2),
+they are converted to `int` for multiplication.
+In other words, `a * b` is actually `(int)a * (int)b`,
+a _signed_ multiplication.
+
+Second, since signed integer overflow is undefined behavior in C,
+gcc assumes the signed multiplication doesn't overflow.  This is shown
+in the range information: the product `_5` is considered non-negative.
+Therefore, `c` and `_5` are indistinguishable.
+
+Now the sign conversion `c = (uint32_t) _5` becomes dead code, and gcc's next
+pass _dce_ (dead code elimination) removes it.
+The return value `_7` is basically `(uint64_t)((int)a * (int)b)`.
+Note that this is a _sign_ extension from `int` to `uint64_t`,
+which will be lowered to `cltq`.
+This is how `cltq` pops out.
+
+Fixes and workarounds
+---------------------
+
+One way to fix the C code is to convert `a` and `b` to `uint32_t` before
+multiplication (assuming `int` is 32-bits).
+
+``` c
+uint64_t mul_fixed(uint16_t a, uint16_t b)
+{
+	uint32_t c = (uint32_t)a * (uint32_t)b;
+	return c;
+}
+```
+
+Instead of fixing the code, another approach is to add a workaround
+compiler option.  Here's what gcc 4.7.3/4.8.1 emits with `-O2 -fwrapv`:
+
+```nasm
+movzwl  %si, %eax
+movzwl  %di, %edi
+imull   %edi, %eax
+ret
+```
+
+Everything looks good now.  However, if you use `-fno-strict-overflow`
+instead of `-fwrapv`, congratulations, you'll get bitten by `cltq` again:
+
+```nasm
+movzwl  %di, %eax
+movzwl  %si, %esi
+imull   %esi, %eax
+cltq
+ret
+```
+
+I never really understand the
+[difference](http://www.airs.com/blog/archives/120)
+between `-fwrapv` and `-fno-strict-overflow`,
+and [which option to choose](https://lkml.org/lkml/2009/7/12/90).
+Looks like it's safer to just fix the C code.
+
+As a comparison, here's what clang 3.3 emits with `-O2`:
+
+```nasm
+imulq   %rdi, %rsi
+movq    %rsi, %rax
+ret
+```
+
+Don't worry, no `cltq` here.
+
+Possible detection methods
+--------------------------
+
+In [our STACK paper](http://css.csail.mit.edu/stack/),
+we use the term _unstable code_ to refer to
+program fragments being optimized away by the compiler due to undefined behavior.
+[STACK](http://css.csail.mit.edu/stack/) is a static checker
+for detecting unstable code.
+While it works well for other cases,
+unfortunately, STACK doesn't work here.
+The main reason is that STACK accepts [LLVM IR](http://llvm.org/docs/LangRef.html),
+which has no sign conversion instruction;
+the code being optimized away,
+the sign conversion `c = (uint32_t) _5` as in gcc,
+doesn't exist in LLVM IR:
+
+``` llvm
+define i64 @mul(i16 zeroext %a, i16 zeroext %b) #0 {
+entry:
+  %conv = zext i16 %a to i32
+  %conv1 = zext i16 %b to i32
+  %mul = mul nsw i32 %conv, %conv1
+  %conv2 = zext i32 %mul to i64
+  ret i64 %conv2
+}
+```
+
+Since in LLVM IR there's no instruction to be optimized away,
+STACK doesn't report any warning.
+One could port STACK to gcc to catch this case though.
+
+Another possible way is to extend STACK with an oracle that rewrites
+`zext` (zero extension) to `sext` (sign extension).
+The idea is that
+if the code after rewriting is equivalent to the original _only_
+under the assumption of undefined behavior,
+then this rewriting exploits undefined behavior,
+and the code may be unstable.
+
+I coded up a prototype and it did work for this `mul` case
+(see the `sign` branch in STACK's git repository if interested).
+But it reported too many false positives.
+After all, the compiler being able to remove code often indicates a bug,
+while being able to flip between `zext` and `sext` doesn't.
+Maybe we need better heuristics to reduce false positives.
+
+There are a few handy tools for finding undefined behavior.
+For example,
+run the C code with Frama-C's [value analysis](http://frama-c.com/value.html)
+and you'll see the following warning:
+
+	$ frama-c -val mul.c
+	[value] Analyzing a complete application starting at main
+	...
+	mul.c:3:[kernel] warning: signed overflow. assert (int)a*(int)b ≤ 2147483647;
+	mul.c:3:[value] assigning non deterministic value for the first time
+	...
+
+You can also compile it with clang's `-fsanitize=undefined` (based
+on [IOC](http://embed.cs.utah.edu/ioc/)).
+You need an input to trigger the undefined behavior, such as:
+
+	$ ./mul 65535 65535
+	mul.c:3:17: runtime error: signed integer overflow
+	          : 65535 * 65535 cannot be represented in type 'int'
+
+Though these tools won't tell you what code may be "miscompiled" as STACK does,
+fixing the warnings will reduce the chances of being bitten by the compiler.
+
+Summary
+-------
+
+This is one of my favorite unstable code examples.
+The code is very short, uses unsigned integers only,
+and yet confusing.
+Fixing the problem, especially by using gcc's workaround options,
+is tricky.
+
+Update from Sep 18th:
+Add results from Frama-C and clang's `-fsanitize=undefined`.
+Thanks to David Mentré and John Regehr.

@@ -1,0 +1,108 @@
+---
+layout: post
+title: "IDIV DoS"
+date: 2012-12-31 16:33
+comments: true
+tags: security
+---
+A little fun for the last day of 2012:
+how to crash a program via division?
+x86's IDIV instruction traps not only on division by zero,
+but also on `INT_MIN / -1` (signed integer overflow).
+
+## C/C++
+
+Try to compile this little function.
+
+``` c
+long long crash()
+{
+	return (1LL << 63) % -1;
+}
+```
+
+It will crash the
+[tcc](http://bellard.org/tcc/) compiler and
+the [sparse](https://sparse.wiki.kernel.org/) checker.
+
+## SQL
+
+You need a 64-bit PostgreSQL (older than 9.2.2/9.1.7/9.0.11)
+installed on Windows.
+
+Try the following SQL statement.
+
+``` sql
+SELECT ((-9223372036854775808)::int8) % (-1);
+```
+
+Instead of producing 0 from modulo -1,
+it will crash your PostgreSQL server.
+The modulo trick also worked in [Firebird](http://www.firebirdsql.org/). 
+This is [fixed](http://git.postgresql.org/gitweb/?p=postgresql.git;a=commitdiff;h=a235b85a0ba06666dbbfdb9249a65dbfa9b42ebd) by adding a check on the divisor.
+
+Here goes more evil SQL.
+
+``` sql
+SELECT ((-2147483648)::int4) / ((-1)::int2);
+SELECT ((-9223372036854775808)::int8) / (-1);
+SELECT ((-9223372036854775808)::int8) * ((-1)::int8);
+```
+
+The first two are straightforward.
+The third one (multiplication) crashes PostgreSQL
+because the overflow check is done via division.
+
+The
+[fix](http://git.postgresql.org/gitweb/?p=postgresql.git;a=commitdiff;h=1f7cb5c30983752ff8de833de30afcaee63536d0) 
+is simple: do the overflow check before the division, not after.
+
+It's interesting that the developers
+[fixed 32-bit division crashes](http://archives.postgresql.org/pgsql-patches/2006-06/msg00104.php),
+but missed 64-bit cases.
+My guess is that the developers did the tests on a 32-bit
+Windows.  In that case, since there's no 64-bit IDIV instruction,
+the compiler instead generates a call to a runtime function `lldiv`,
+which doesn't trap on `INT_MIN / -1`.
+This would lead to the incorrect conclusion that 64-bit division
+wouldn't trap.
+
+## ClamAV bytecode
+
+The ClamAV engine accepts bytecode signatures as extensions to
+detect new viruses.  You can write one to crash ClamAV's interpreter,
+as follows.
+
+``` c
+int entrypoint(void)
+{
+	long long x = 1LL << 63;
+	int y = __is_bigendian() - 1;
+	if (x / y)
+		foundVirus("idiv");
+	return 0;
+}
+```
+
+It basically does `INT_MIN / -1`, only to prevent ClamAV's bytecode
+compiler from optimizing away the division.
+Then compile the function into bytecode, load it into `clamscan`,
+and it will crash the interpreter.
+
+Actually the interpreter does have a sanity check for signed division,
+which was
+[introduced](https://github.com/vrtadmin/clamav-devel/commit/82ca2ab4209a46a9e7322777452000465070ffb6)
+in 2009.
+
+``` c
+static always_inline int check_sdivops(int64_t op0, int64_t op1)
+{
+	return op1 == 0 || (op0 == -1 && op1 ==  (-9223372036854775807LL-1LL));
+}
+```
+
+The sanity check doesn't work because, well, you really should
+swap `op0` and `op1` in the second half of the check.
+
+Let me know if you have more stories.
+Happy new year!
