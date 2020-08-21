@@ -4,6 +4,7 @@ title: "Mars or UFO: The DIY night sky"
 date: 2013-08-21T17:13:16-04:00
 comments: true
 tags: astronomy history
+d3: true
 ---
 Came across a funny book titled _5000 years of UFOs_ (1997) last weekend.
 The author claims that a number of ancient astronomical records from Chinese
@@ -208,8 +209,6 @@ Footnotes
 
 [^5]: [魏書·列傳第二十三·崔浩](http://zh.wikisource.org/wiki/%E9%AD%8F%E6%9B%B8/%E5%8D%B735): "初 姚興死之前歲也..."
 
-<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-<script src="http://d3js.org/queue.v1.min.js"></script>
 <script src="/{{ site.code_dir }}/ti/ti.js"></script>
 <script>
 ti.load("#mars2011", {

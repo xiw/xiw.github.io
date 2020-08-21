@@ -4,6 +4,7 @@ title: "Mars close approach in 2016"
 date: 2016-05-15 19:59:06 -0700
 comments: true
 tags: astronomy
+d3: true
 ---
 
 According to NASA,
@@ -21,8 +22,6 @@ including retrograde from April to June, as shown below:
 One thing still missing is updating the size of Mars.
 Feel free to send me a patch.
 
-<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-<script src="http://d3js.org/queue.v1.min.js"></script>
 <script src="/{{ site.code_dir }}/ti/ti.js"></script>
 <script>
 ti.load("#mars2016", {

@@ -32,20 +32,17 @@ ti.load = function(id, conf) {
   window.onresize = onresize;
   onresize();
 
-  var q = queue();
-  [conf.stars].concat(conf.planets).forEach(function(e) {
-    q.defer(d3.text, e.src, "text/plain");
-  });
-  q.awaitAll(function (error, results) {
-    ti.ready(svg, conf, results);
-  });
+  Promise.all([conf.stars].concat(conf.planets).map(e => d3.text(e.src)))
+    .then((results) => {
+      ti.ready(svg, conf, results);
+    });
 }
 
 ti.parseStars = function(c, map) {
   var state = 0, starMap = {};
   var stars = [], links = [], constellations = [];
 
-  d3.tsv.parseRows(c, function(d) {
+  d3.tsvParseRows(c, function(d) {
     if (d[0] === "") {
       state = 0;
       return;
@@ -96,7 +93,7 @@ ti.ready = function(svg, conf, results) {
   var g = ti.parseStars(results[0], d3.set(conf.stars.map));
 
   var planetCoords = results.slice(1).map(function (p) {
-    return d3.dsv(" ", "text/plain").parseRows(p, function(d) {
+    return d3.dsvFormat(" ").parseRows(p, function(d) {
       d = d.filter(function(s) { return s; });
       return {
         time: d[0],
@@ -111,9 +108,9 @@ ti.ready = function(svg, conf, results) {
   };
   var dec = function(d) { return d.dec; }
 
-  var xs = d3.scale.linear()
+  var xs = d3.scaleLinear()
     .range([conf.width - conf.margin.right, conf.margin.left]);
-  var ys = d3.scale.linear()
+  var ys = d3.scaleLinear()
     .range([conf.height - conf.margin.bottom, conf.margin.top]);
 
   var scale = {
@@ -125,10 +122,10 @@ ti.ready = function(svg, conf, results) {
   xs.domain(d3.extent(g.stars.concat(mainCoords), ra));
   ys.domain(d3.extent(g.stars.concat(mainCoords), dec));
 
-  var polyline = d3.svg.line()
+  var polyline = d3.line()
     .x(scale.x)
     .y(scale.y)
-    .interpolate("linear");
+    ;
 
   svg.selectAll("link")
     .data(g.links)
@@ -154,7 +151,8 @@ ti.ready = function(svg, conf, results) {
   var starNode = svg.selectAll("star")
     .data(g.stars)
     .enter()
-    .append("g");
+    .append("g")
+    ;
 
   starNode.append("svn:text")
     .attr("x", scale.x)
@@ -164,6 +162,7 @@ ti.ready = function(svg, conf, results) {
     .attr("fill", "grey")
     .attr("style", conf.font.star)
     .text(function(d) { return d.note; })
+    ;
 
   starNode.append("svn:circle")
     .attr("cx", scale.x)
@@ -179,7 +178,7 @@ ti.ready = function(svg, conf, results) {
     .attr("stroke", "white")
     .attr("stroke-width", 1)
     .attr("stroke-dasharray", "5 3")
-  ;
+    ;
 
   var time = svg.append("svg:text")
     .attr("x", conf.width - 60)
@@ -205,30 +204,38 @@ ti.ratioOf = function(arr, ratio) {
   return arr[Math.floor(ratio * (arr.length - 1))];
 }
 
-ti.interpolateRatioOf = function(arr, ratio) {
-  var idx = ratio * (arr.length - 1);
-  var lo = Math.floor(idx);
-  if (lo >= arr.length - 1)
-    return arr[lo];
-  var hi = lo + 1;
-  return d3.interpolate(arr[lo], arr[hi])(idx - lo);
+ti.interpolateRA = function(a, b) {
+  // be careful with wraparound
+  if (Math.abs(a - b) > 180 * 3600)
+    return t => a;
+  return d3.interpolate(a, b);
+}
+
+ti.interpolateCoord = function(a, b) {
+  var interpolateRA = ti.interpolateRA(a.ra, b.ra);
+  var interpolateDec = d3.interpolate(a.dec, b.dec);
+  return t => ({
+    ra:  interpolateRA(t),
+    dec: interpolateDec(t),
+  });
 }
 
 ti.move = function(ns, coords, scale, time, duration) {
-    ns[0].transition()
-     .duration(duration)
-     .ease("linear")
-     .each("end", function() { return ti.move(ns, coords, scale, time, duration); })
-     .attrTween("transform", function() { return function(t) {
-       for (var i = 1; i < ns.length; ++i) {
-         var p = ti.ratioOf(coords[i], t);
-         ns[i].attr("transform", "translate(" + scale.x(p) + "," + scale.y(p) + ")");
-       }
-       var p = ti.ratioOf(coords[0], t);
-       time.text(p.time);
-       p = ti.interpolateRatioOf(coords[0], t);
-       return "translate(" + scale.x(p) + "," + scale.y(p) + ")";
-     }});
+  var interpolate = d3.piecewise(ti.interpolateCoord, coords[0]);
+  ns[0].transition()
+   .duration(duration)
+   .ease(d3.easeLinear)
+   .on("end", function() { return ti.move(ns, coords, scale, time, duration); })
+   .attrTween("transform", function() { return function(t) {
+     for (var i = 1; i < ns.length; ++i) {
+       var p = ti.ratioOf(coords[i], t);
+       ns[i].attr("transform", "translate(" + scale.x(p) + "," + scale.y(p) + ")");
+     }
+     var p = ti.ratioOf(coords[0], t);
+     time.text(p.time);
+     p = interpolate(t);
+     return "translate(" + scale.x(p) + "," + scale.y(p) + ")";
+   }});
 }
 
 ti.marsAttr = function(c) {
