@@ -18,11 +18,10 @@ solve Doodle Fit, using 0-1 integer programming.
 
 The rule of the game is simple: fit a set of given blocks into
 a given shape (no rotation).  For example, try to fit the three
-blocks into the two-square shape.
-
+blocks into the two-square shape:
 <center>
-<svg width="180" height="120" viewBox="0 0 6 3">
-	<g stroke-width="0.02" fill="lightgrey" stroke="black">
+<svg width="180" height="120" viewBox="-.1 -.1 6.1 3.1">
+	<g stroke-width="0.05" fill="lightgrey" stroke="black">
 		<rect x="0" y="0" width="1" height="1" />
 		<rect x="1" y="0" width="1" height="1" />
 		<rect x="0" y="1" width="1" height="1" />
@@ -33,17 +32,17 @@ blocks into the two-square shape.
 		<rect x="3" y="2" width="1" height="1" />
 	</g>
 </svg>
-<svg width="210" height="120" viewBox="0 0 7 2">
-	<g stroke-width="0.02" fill="red" stroke="black">
+<svg width="210" height="120" viewBox="-.1 0 7.5 2">
+	<g stroke-width="0.05" fill="red" stroke="black">
 		<rect x="1" y="0" width="1" height="1" />
 		<rect x="0" y="1" width="1" height="1" />
 		<rect x="1" y="1" width="1" height="1" />
 	</g>
-	<g stroke-width="0.02" fill="green" stroke="black">
+	<g stroke-width="0.05" fill="green" stroke="black">
 		<rect x="3" y="0" width="1" height="1" />
 		<rect x="3" y="1" width="1" height="1" />
 	</g>
-	<g stroke-width="0.02" fill="blue" stroke="black">
+	<g stroke-width="0.05" fill="blue" stroke="black">
 		<rect x="5" y="0" width="1" height="1" />
 		<rect x="5" y="1" width="1" height="1" />
 		<rect x="6" y="1" width="1" height="1" />
@@ -53,7 +52,21 @@ blocks into the two-square shape.
 
 This solution is pretty easy.  Put the red block to the bottom-right
 corner and the green block to the left-most, leaving the blue block
-in the middle.
+in the middle:
+<center>
+<svg width="180" height="120" viewBox="-.1 -.1 6.1 3.1">
+	<g stroke-width="0.05" stroke="black">
+		<rect x="0" y="0" width="1" height="1" fill="green" />
+		<rect x="1" y="0" width="1" height="1" fill="blue" />
+		<rect x="0" y="1" width="1" height="1" fill="green" />
+		<rect x="1" y="1" width="1" height="1" fill="blue" />
+		<rect x="2" y="1" width="1" height="1" fill="blue" />
+		<rect x="3" y="1" width="1" height="1" fill="red" />
+		<rect x="2" y="2" width="1" height="1" fill="red" />
+		<rect x="3" y="2" width="1" height="1" fill="red" />
+	</g>
+</svg>
+</center>
 
 Let's see how to model the game using a set of constraints.
 We use $$p_{color}(row, col)$$ to denote whether to place the
@@ -124,55 +137,58 @@ blocks, split by `---`, as follows.
 Then generate the constraints using the script,
 which writes them to `two.mod` in the GNU MathProg language.
 
-	$ python doodle-fit.py < two > two.mod
+	$ python3 doodle-fit.py < two > two.mod
 
 Invoke a solver to get a solution.  I use GLPK here.
 You may try to add `--minisat` to `glpsol` to solve the constraints
 with the SAT solver instead.
 
-	$ glpsol --math two.mod -w two.sol
-	GLPSOL: GLPK LP/MIP Solver, v4.47
-	Parameter(s) specified in the command line:
-	 --math two.mod -w two.sol
-	Reading model section from two.mod...
-	24 lines were read
-	Generating b0...
-	Generating b1...
-	Generating b2...
-	Generating c00...
-	Generating c01...
-	Generating c10...
-	Generating c11...
-	Generating c12...
-	Generating c13...
-	Generating c22...
-	Generating c23...
-	Model has been successfully generated
-	GLPK Integer Optimizer, v4.47
-	11 rows, 9 columns, 32 non-zeros
-	9 integer variables, all of which are binary
-	Preprocessing...
-	11 rows, 9 columns, 32 non-zeros
-	9 integer variables, all of which are binary
-	Scaling...
-	 A: min|aij| =  1.000e+00  max|aij| =  1.000e+00  ratio =  1.000e+00
-	Problem data seem to be well scaled
-	Constructing initial basis...
-	Size of triangular part = 8
-	Solving LP relaxation...
-	GLPK Simplex Optimizer, v4.47
-	11 rows, 9 columns, 32 non-zeros
-	*     0: obj =   0.000000000e+00  infeas =  0.000e+00 (3)
-	OPTIMAL SOLUTION FOUND
-	Integer optimization begins...
-	+     0: mip =     not found yet >=              -inf        (1; 0)
-	+     0: >>>>>   0.000000000e+00 >=   0.000000000e+00   0.0% (1; 0)
-	+     0: mip =   0.000000000e+00 >=     tree is empty   0.0% (0; 1)
-	INTEGER OPTIMAL SOLUTION FOUND
-	Time used:   0.0 secs
-	Memory used: 0.1 Mb (121133 bytes)
-	Writing MIP solution to `two.sol'...
-	22 lines were written
+```
+$ glpsol --math two.mod -w two.sol
+GLPSOL: GLPK LP/MIP Solver, v4.65
+Parameter(s) specified in the command line:
+ --math two.mod -w two.sol
+Reading model section from two.mod...
+24 lines were read
+Generating b0...
+Generating b1...
+Generating b2...
+Generating c00...
+Generating c01...
+Generating c10...
+Generating c11...
+Generating c12...
+Generating c13...
+Generating c22...
+Generating c23...
+Model has been successfully generated
+GLPK Integer Optimizer, v4.65
+11 rows, 9 columns, 32 non-zeros
+9 integer variables, all of which are binary
+Preprocessing...
+11 rows, 9 columns, 32 non-zeros
+9 integer variables, all of which are binary
+Scaling...
+ A: min|aij| =  1.000e+00  max|aij| =  1.000e+00  ratio =  1.000e+00
+Problem data seem to be well scaled
+Constructing initial basis...
+Size of triangular part is 8
+Solving LP relaxation...
+GLPK Simplex Optimizer, v4.65
+11 rows, 9 columns, 32 non-zeros
+*     0: obj =   0.000000000e+00 inf =   0.000e+00 (0)
+OPTIMAL LP SOLUTION FOUND
+Integer optimization begins...
+Long-step dual simplex will be used
++     0: mip =     not found yet >=              -inf        (1; 0)
++     0: >>>>>   0.000000000e+00 >=   0.000000000e+00   0.0% (1; 0)
++     0: mip =   0.000000000e+00 >=     tree is empty   0.0% (0; 1)
+INTEGER OPTIMAL SOLUTION FOUND
+Time used:   0.0 secs
+Memory used: 0.1 Mb (119119 bytes)
+Writing MIP solution to 'two.sol'...
+29 lines were written
+```
 
 Make sure you see something like `OPTIMAL SOLUTION FOUND`
 in the output.  If the SAT solver is used, you should see
@@ -181,9 +197,11 @@ or send me a bug report.
 
 Finally, display the solution `two.sol` using the script again.
 
-	$ python doodle-fit.py two.sol < two
+	$ python3 doodle-fit.py two.sol < two
 	12  
 	1220
 	  00
 
 Now you can "enjoy" the game.
+
+Aug 23, 2020: updated to Python 3 and GLPK 4.65.

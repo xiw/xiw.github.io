@@ -1,10 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # A Doodle Fit solver.
 # http://kqueue.org/blog/2012/01/13/solving-doodle-fit/
 #
 
-from itertools import izip
 import logging, sys
 
 def width(block): return len(block[0])
@@ -30,8 +29,8 @@ def getblock(fp):
 
 # can block be placed at (row, col) in shape?
 def canplaceat(row, col, block, shape):
-	for bline, sline in izip(block, shape[row:]):
-		mask = [bc & sc for bc, sc in izip(bline, sline[col:])]
+	for bline, sline in zip(block, shape[row:]):
+		mask = [bc & sc for bc, sc in zip(bline, sline[col:])]
 		if mask != bline:
 			return False
 	return True
@@ -91,12 +90,11 @@ def show(sol, plan, shape, out):
 	keys = []
 	for (block, locs) in plan:
 		keys.extend([(block, row, col) for (row, col) in locs])
-	sol = sol.split()[-len(keys):]
+	sol = [line.rstrip() for line in sol if line.startswith('j')]
 	log.info("solution: %s", sol)
 	ch = '0'
-	for i, a in enumerate(sol):
-		a = int(a)
-		if not a:
+	for i, line in enumerate(sol):
+		if line.endswith('0'):
 			continue
 		(block, row, col) = keys[i]
 		fill(ch, row, col, block, shape)
@@ -121,7 +119,7 @@ def main(fp, out, log):
 	if len(sys.argv) == 1:
 		gen(plan, shape, out)
 	else:
-		show(open(sys.argv[1]).read(), plan, shape, out)
+		show(open(sys.argv[1]).readlines(), plan, shape, out)
 
 
 if __name__ == "__main__":
