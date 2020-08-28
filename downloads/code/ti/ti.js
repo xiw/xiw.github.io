@@ -90,7 +90,7 @@ ti.parseStars = function(c, map) {
 }
 
 ti.ready = function(svg, conf, results) {
-  var g = ti.parseStars(results[0], d3.set(conf.stars.map));
+  var g = ti.parseStars(results[0], new Set(conf.stars.map));
 
   var planetCoords = results.slice(1).map(function (p) {
     return d3.dsvFormat(" ").parseRows(p, function(d) {
