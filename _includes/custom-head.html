@@ -1,5 +1,7 @@
 {% if page.latex %}
-<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<link rel="stylesheet" href="{{ "/assets/dist/katex/katex.min.css" | relative_url }}">
+<script defer src="{{ "/assets/dist/katex/katex.min.js" | relative_url }}"></script>
+<script defer src="{{ "/assets/dist/katex/contrib/auto-render.min.js" | relative_url }}" onload="renderMathInElement(document.body);"></script>
 {% endif %}
 {% if page.d3 %}
 <script src="{{ "/assets/dist/d3.min.js" | relative_url }}"></script>

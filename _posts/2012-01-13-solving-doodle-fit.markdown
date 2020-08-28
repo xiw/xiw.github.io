@@ -78,11 +78,11 @@ In other words, their sum must be 1.  We have similar constraints
 for the other two blocks.
 
 $$
-\begin{align*}
+\begin{aligned}
 & p_r(1, 1) + p_r(2, 3)                        & = 1 \\
 & p_g(1, 1) + p_g(1, 2) + p_g(2,3) + p_g(2, 4) & = 1 \\
 & p_b(1, 1) + p_b(1, 2) + p_b(2, 3)            & = 1 \\
-\end{align*}
+\end{aligned}
 $$
 
 Additionally, each cell will be covered by one and only one block.
@@ -93,7 +93,7 @@ $$p_g(1, 1)$$ and $$p_b(1, 1)$$ must be 1.  We have such a constraint
 for each cell, as follows.
 
 $$
-\begin{align*}
+\begin{aligned}
 \text{row 1:}\\
 & p_g(1, 1) + p_b(1, 1)                         & = 1 \\
 & p_r(1, 1) + p_g(1, 2) + p_b(1, 2)             & = 1 \\
@@ -105,7 +105,7 @@ $$
 \text{row 3:}\\
 & p_r(2, 3) + p_g(2, 3) + p_b(2, 3)             & = 1 \\
 & p_r(2, 3) + p_g(2, 4) + p_b(2, 3)             & = 1 \\
-\end{align*}
+\end{aligned}
 $$
 
 That's all we need.  Feed these constraints into a solver
