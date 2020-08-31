@@ -1,3 +1,6 @@
+{% if page.cindy %}
+<script src="{{ "/assets/dist/Cindy.js" | relative_url }}"></script>
+{% endif %}
 {% if page.latex %}
 <link rel="stylesheet" href="{{ "/assets/dist/katex/katex.min.css" | relative_url }}">
 <script defer src="{{ "/assets/dist/katex/katex.min.js" | relative_url }}"></script>
