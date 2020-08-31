@@ -1,0 +1,80 @@
+/* IMO 2019, problem 2 */
+
+load("geometry.mac");
+
+/* Declare free points A, B, C. */
+declare([a, b, c], complex);
+/* Declare the ratios for A₁ and B₁. */
+declare([ra, rb], real);
+/* Declare a free point for PQ. */
+declare(k, complex);
+
+/*
+ * Choose C as the origin to avoid the following error in Maxima:
+ *
+ * "PQUOTIENT: Quotient by a polynomial of higher degree (case 2b)"
+ */
+c : 0;
+
+/* A₁ is on BC. */
+a1 : (c - b) * ra + b;
+/* B₁ is on CA. */
+b1 : (a - c) * rb + c;
+
+/*
+ * The line through K parallel to AB intersects AA₁ and BB₁ at
+ * P and Q, respectively.
+ *
+ * An alternative approach is to introduce a ratio with the
+ * intersection of AA₁ and BB₁ (see imo2019p2e3.mac).
+ */
+p : intersection(a, a1, k, (a - b) + k);
+q : intersection(b, b1, k, (a - b) + k);
+
+/*
+ * To solve p1 and q1, use the solve function with the following code
+ * and copy-paste the results:
+ *
+ * declare([p1, q1, b1, p, q, a, b, c, _p1, _q1, _b1, _p, _q, _a, _b, _c],
+ *         complex);
+ * h1 : (p1 - b1) / (b1 - p) = (_p1 - _b1) / (_b1 - _p);
+ * h2 : ((p1 - c) / (p1 - p)) / ((a - c) / (a - b)) =
+ *      ((_p1 - _c) / (_p1 - _p)) / ((_a - _c) / (_a - _b));
+ * h3 : (q1 - a1) / (a1 - q) = (_q1 - _a1) / (_a1 - _q);
+ * h4 : ((q1 - c) / (q1 - q)) / ((b - c) / (b - a)) =
+ *      ((_q1 - _c) / (_q1 - _q)) / ((_b - _c) / (_b - _a));
+ * stardisp : true;
+ * solve([h1, h2], [p1, _p1]);
+ * solve([h3, h4], [q1, _q1]);
+ */
+_a : conjugate(a);
+_b : conjugate(b);
+_c : conjugate(c);
+_a1 : conjugate(a1);
+_b1 : conjugate(b1);
+_p : conjugate(p);
+_q : conjugate(q);
+
+p1 : ((((_b - _a)*_c + (_a - _b)*_b1)*c
+ + ((_a - _b)*_c + (_b - _a)*_b1)*a)*p + (((_b - _a)*_p + (_a - _b)*_c)*b1
+ + ((_a - _c)*_p + _b1*_c - _a*_b1)*b + ((_c - _a)*_p - _b1*_c + _a*_b1)*a)*c
+ + ((_a - _b)*_p + (_b - _a)*_c)*a*b1)/(((_b - _a)*_p + (_a - _b)*_b1)*c
+ + ((_a - _c)*_p + _b1*_c - _a*_b1)*b + ((_c - _b)*_p - _b1*_c + _b*_b1)*a);
+
+q1 : ((((_b - _a)*_c - _a1*_b + _a*_a1)*c
+ + ((_a - _b)*_c + _a1*_b - _a*_a1)*b)*q
+ + (((_b - _c)*_q + _a1*_c - _a1*_b)*b + ((_b - _a)*_q + (_a - _b)*_c)*a1
+ + ((_c - _b)*_q - _a1*_c + _a1*_b)*a)*c + ((_a - _b)*_q + (_b - _a)*_c)*a1*b)
+/(((_b - _a)*_q - _a1*_b + _a*_a1)*c + ((_a - _c)*_q + _a1*_c - _a*_a1)*b
+ + ((_c - _b)*_q - _a1*_c + _a1*_b)*a);
+
+/* Perform sanity checks on P₁ and Q₁. */
+prove(collinear(p1, b1, p));
+prove(pure_real(((p1 - c) / (p1 - p)) / ((a - c) / (a - b))));
+prove(collinear(q1, a1, q));
+prove(pure_real(((q1 - c) / (q1 - q)) / ((b - c) / (b - a))));
+
+/* Prove that P, Q, P₁, Q₁ are concyclic. */
+prove(concyclic(p, q, p1, q1));
+
+quit();

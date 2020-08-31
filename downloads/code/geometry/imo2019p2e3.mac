@@ -1,0 +1,46 @@
+/* A variant of IMO 2019, problem 2 */
+
+load("geometry.mac")$
+
+/* Declare angles for A, B, C, A₂, B₂ */
+declare([theta_a, theta_b, theta_c, theta_a2, theta_b2], real);
+/* Declare ratio for P and Q */
+declare(r, real);
+
+/* Choose C on the real axis, avoiding possible heap exhaustion. */
+theta_c : 0;
+
+/* A, B, C, A₂, B₂ are on the unit circle. */
+a : %e^(%i * theta_a);
+b : %e^(%i * theta_b);
+c : %e^(%i * theta_c);
+a2 : %e^(%i * theta_a2);
+b2 : %e^(%i * theta_b2);
+
+/* A₁ is the intersection of AA₂ and BC. */
+a1 : intersection(a, a2, b, c);
+
+/* B₁ is the intersection of BB₂ and CA. */
+b1 : intersection(b, b2, c, a);
+
+/* L is the intersection of AA₂ and BB₂. */
+l : intersection(a, a2, b, b2);
+
+/* PQ is parallel to AB. */
+p : (l - a) * r + a;
+q : (l - b) * r + b;
+
+/* P₁ is the intersection of PB₁ and the circumcircle of B₁B₂C. */
+ob : circumcenter(b1, b2, c);
+p1 : reflection(ob, %i * (p - b1) + ob, b1);
+
+/* Q₁ is the intersection of QA₁ and the circumcircle of A₁A₂C. */
+oa : circumcenter(a1, a2, c);
+q1 : reflection(oa, %i * (q - a1) + oa, a1);
+
+/* Prove that A₂, B₂, P, Q, P₁, Q₁ are concyclic. */
+prove(concyclic(a2, b2, p, q));
+prove(concyclic(a2, b2, p, p1));
+prove(concyclic(a2, b2, p, q1));
+
+quit();
