@@ -1,7 +1,6 @@
 ---
 layout: post
 title: "Solving Doodle Fit"
-date: 2012-01-13 06:49
 comments: true
 tags: game
 keywords: "Doodle Fit"

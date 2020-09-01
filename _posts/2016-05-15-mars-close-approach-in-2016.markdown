@@ -1,7 +1,6 @@
 ---
 layout: post
 title: "Mars close approach in 2016"
-date: 2016-05-15 19:59:06 -0700
 comments: true
 tags: astronomy
 d3: true

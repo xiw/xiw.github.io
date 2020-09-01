@@ -1,7 +1,6 @@
 ---
 layout: post
 title: "Memory allocator security revisited"
-date: 2012-03-05 20:53
 comments: true
 tags: security
 ---

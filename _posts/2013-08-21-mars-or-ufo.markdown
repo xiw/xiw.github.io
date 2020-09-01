@@ -1,7 +1,6 @@
 ---
 layout: post
 title: "Mars or UFO: The DIY night sky"
-date: 2013-08-21T17:13:16-04:00
 comments: true
 tags: astronomy history
 d3: true

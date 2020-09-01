@@ -1,7 +1,6 @@
 ---
 layout: post
 title: "More randomness or less"
-date: 2012-06-25 07:09
 comments: true
 tags: security optimization
 keywords: "srandomdev, uninitialized memory, undefined behavior"

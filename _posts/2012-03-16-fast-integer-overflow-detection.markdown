@@ -1,7 +1,6 @@
 ---
 layout: post
 title: "Fast integer overflow detection"
-date: 2012-03-16 14:43
 comments: true
 tags: security
 keywords: libo

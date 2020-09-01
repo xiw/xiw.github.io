@@ -1,7 +1,6 @@
 ---
 layout: post
 title: "Overflow builtins"
-date: 2012-03-19 02:11
 comments: true
 tags: clang security
 ---
