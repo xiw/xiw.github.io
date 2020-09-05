@@ -554,8 +554,9 @@ document.querySelectorAll(".cindy-canvas").forEach(function(e) {
 
 // quick-and-dirty highlighting for Maxima code
 function highlightMaxima(e) {
-  var funcs = ["conjugate", "declare", "determinant", "equal", "error", "is",
-               "load", "matrix", "not", "quit"];
+  var funcs = ["conjugate", "declare", "determinant", "eliminate", "equal",
+               "error", "first", "is", "lambda", "load", "length", "map",
+               "matrix", "not", "quit", "ratsimp", "rhs", "solve", "sublist"];
   var constants = ["complex", "real", "true"];
   var keywords = ["else", "if", "then"];
   var lines = e.innerText.split(/\r?\n/).map(line => {
@@ -567,10 +568,10 @@ function highlightMaxima(e) {
     // built-in constants
     line = line.replace(/(%[a-z]*)/g, '<span class="no">$1</span>');
     for (var tmpl of constants)
-      line = line.replace(new RegExp(`([\\s])(${tmpl})(\\s*[\\(\\);])`, 'g'), '$1<span class="no">$2</span>$3');
+      line = line.replace(new RegExp(`([\\s])(${tmpl})(\\s*[\\(\\);,\\s])`, 'g'), '$1<span class="no">$2</span>$3');
     // built-in functions
     for (var tmpl of funcs)
-      line = line.replace(new RegExp(`(${tmpl})(\\s*[\\(\\);])`, 'g'), '<span class="nb">$1</span>$2');
+      line = line.replace(new RegExp(`(${tmpl})(\\s*[\\(\\);,])`, 'g'), '<span class="nb">$1</span>$2');
     // keywords
     for (var tmpl of keywords)
       line = line.replace(new RegExp(`(${tmpl})(\\s)`, 'g'), '<span class="k">$1</span>$2');
