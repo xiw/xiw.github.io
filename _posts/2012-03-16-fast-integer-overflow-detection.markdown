@@ -1,6 +1,7 @@
 ---
 layout: post
 title: "Fast integer overflow detection"
+author: "Xi Wang"
 comments: true
 tags: security
 keywords: libo

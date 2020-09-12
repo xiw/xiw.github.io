@@ -1,5 +1,41 @@
 {% if page.cindy %}
+<style>
+.cindy-canvas {
+  width:  640px;
+  height: 400px;
+  box-shadow: 0 0 8px 0;
+  margin: 0 auto;
+  transform-origin: left top;
+  page-break-inside: avoid;
+}
+</style>
 <script src="{{ "/assets/dist/Cindy.js" | relative_url }}"></script>
+<script type="text/javascript">
+// set up default apperance
+var defaultAppearance = {
+    pointColor: [0, 0, 0],
+    pointSize: 4,
+    lineColor: [0, 0, 0],
+    lineSize: 2,
+};
+
+// set up scaling
+window.addEventListener("load", (e) => {
+  function onresize() {
+    document.querySelectorAll(".cindy-canvas").forEach((e) => {
+      var w = e.parentElement.clientWidth;
+      if (w < e.offsetWidth) {
+        var scale = w / e.offsetWidth;
+        var dy = Math.round((e.offsetHeight * scale - e.offsetHeight));
+        e.style.transform = `scale(${scale})`;
+        e.style.marginBottom = `${dy}px`;
+      }
+    });
+  }
+  window.addEventListener("resize", onresize);
+  onresize();
+});
+</script>
 {% endif %}
 {% if page.latex %}
 <link rel="stylesheet" href="{{ "/assets/dist/katex/katex.min.css" | relative_url }}">

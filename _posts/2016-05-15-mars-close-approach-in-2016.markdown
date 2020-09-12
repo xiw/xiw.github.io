@@ -1,6 +1,7 @@
 ---
 layout: post
 title: "Mars close approach in 2016"
+author: "Xi Wang"
 comments: true
 tags: astronomy
 d3: true

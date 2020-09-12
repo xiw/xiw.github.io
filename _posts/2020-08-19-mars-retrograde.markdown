@@ -1,6 +1,7 @@
 ---
 layout: post
 title: "Mars retrograde in 2020"
+author: "Xi Wang"
 tags: astronomy
 d3: true
 ---

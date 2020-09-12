@@ -1,6 +1,7 @@
 ---
 layout: post
 title: "The cltq story"
+author: "Xi Wang"
 comments: true
 tags: optimization
 ---

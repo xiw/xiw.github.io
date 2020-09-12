@@ -1,6 +1,7 @@
 ---
 layout: post
 title: "Memory allocator security revisited"
+author: "Xi Wang"
 comments: true
 tags: security
 ---

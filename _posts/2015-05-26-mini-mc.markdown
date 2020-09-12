@@ -1,6 +1,7 @@
 ---
 layout: post
 title: "A mini symbolic execution engine"
+author: "Xi Wang"
 comments: true
 tags: teaching
 ---

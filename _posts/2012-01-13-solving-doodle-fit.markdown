@@ -1,6 +1,7 @@
 ---
 layout: post
 title: "Solving Doodle Fit"
+author: "Xi Wang"
 comments: true
 tags: game
 keywords: "Doodle Fit"

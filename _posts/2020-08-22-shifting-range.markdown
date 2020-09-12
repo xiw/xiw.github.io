@@ -1,6 +1,7 @@
 ---
 layout: post
 title: "The shifting range in RISC-V"
+author: "Xi Wang"
 tags: RISC-V
 ---
 

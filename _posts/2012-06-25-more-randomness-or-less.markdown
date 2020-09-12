@@ -1,6 +1,7 @@
 ---
 layout: post
 title: "More randomness or less"
+author: "Xi Wang"
 comments: true
 tags: security optimization
 keywords: "srandomdev, uninitialized memory, undefined behavior"

@@ -1,6 +1,7 @@
 ---
 layout: post
 title: "Mars or UFO: The DIY night sky"
+author: "Xi Wang"
 comments: true
 tags: astronomy history
 d3: true

@@ -1,6 +1,7 @@
 ---
 layout: post
 title: "Automated geometry bashing"
+author: "Xi Wang"
 tags: geometry
 cindy: true
 latex: true
@@ -52,26 +53,15 @@ Below are a few examples.
 See the file [geometry.mac] for more results (e.g., collinearity, concyclicity, and intersection)
 coded up in Maxima, which will be used for later proofs.
 
-<button id="toggle-geometry" class="toggleMaxima"></button>
-
-<pre id="code-geometry" style="display: none;"></pre>
-
 As a simple example, let's prove [Napoleon's theorem]:
 the centers of equilateral triangles constructed outward on the sides of a triangle
-forms an equilateral triangle (known as the _outer Napoleon triangle_).
+form an equilateral triangle (known as the _outer Napoleon triangle_).
 
 <p>
 <div id="napoleon" title="Napoleon's theorem" class="cindy-canvas"></div>
 </p>
 
 <script type="text/javascript">
-var defaultAppearance = {
-    pointColor: [0, 0, 0],
-    pointSize: 4,
-    lineColor: [0, 0, 0],
-    lineSize: 2,
-};
-
 CindyJS({
   ports: [{id: "napoleon"}],
   defaultAppearance: defaultAppearance,
@@ -281,10 +271,6 @@ CindyJS({
 
 See the solution in Maxima [imo2019p2.mac].
 
-<button id="toggle-imo2019p2" class="toggleMaxima"></button>
-
-<pre id="code-imo2019p2" style="display: none;"></pre>
-
 Here's the high-level flow.
 $$A, B, C$$ are free points,
 from which we derive $$A_1$$ and $$B_1$$.
@@ -468,10 +454,6 @@ CindyJS({
 
 See the solution in Maxima [imo2019p6.mac].
 
-<button id="toggle-imo2019p6" class="toggleMaxima"></button>
-
-<pre id="code-imo2019p6" style="display: none;"></pre>
-
 The problem description is constructive, and it's fairly straightforward to calculate each point.
 Two optimizations are worth mentioning.
 
@@ -523,40 +505,13 @@ Another important factor is [how these problems will be encoded formally](https:
 **Acknowledgments**: Luke Nelson, Emina Torlak, and Zhilei Xu
 provided feedback on a draft of this post.
 
-<style>
-.cindy-canvas {
-  width:  640px;
-  height: 400px;
-  box-shadow: 0 0 8px 0;
-  margin: 0 auto;
-  transform-origin: left top;
-}
-.toggleMaxima {
-  display: none;
-}
-</style>
-
 <script type="text/javascript">
-// set up scaling
-document.querySelectorAll(".cindy-canvas").forEach(function(e) {
-  var onresize = function() {
-    var w = e.parentElement.clientWidth;
-    if (w < e.offsetWidth) {
-      var scale = w / e.offsetWidth;
-      var dy = Math.round((e.offsetHeight * scale - e.offsetHeight));
-      e.style.transform = `scale(${scale})`;
-      e.style.marginBottom = `${dy}px`;
-    }
-  };
-  window.addEventListener("resize", onresize);
-  onresize();
-});
-
 // quick-and-dirty highlighting for Maxima code
 function highlightMaxima(e) {
   var funcs = ["conjugate", "declare", "determinant", "eliminate", "equal",
                "error", "first", "is", "lambda", "load", "length", "map",
-               "matrix", "not", "quit", "ratsimp", "rhs", "solve", "sublist"];
+               "matrix", "not", "quit", "ratsimp", "rhs", "second", "solve",
+               "sublist"];
   var constants = ["complex", "real", "true"];
   var keywords = ["else", "if", "then"];
   var lines = e.innerText.split(/\r?\n/).map(line => {
@@ -583,32 +538,6 @@ function highlightMaxima(e) {
 
 document.querySelectorAll("code.language-maxima").forEach(highlightMaxima);
 
-document.querySelectorAll(".toggleMaxima").forEach(function(obj) {
-  obj.textContent = 'Click to show code';
-  obj.style.display = 'inline';
-  obj.onclick = function() {
-    var docID = this.id.replace(/^toggle-/, '');
-    var code = document.querySelector('#code-' + docID);
-    if (code.style.display == 'none') {
-      code.style.display = 'block';
-      this.textContent = this.textContent.replace('show', 'hide');
-    } else {
-      code.style.display = 'none';
-      this.textContent = this.textContent.replace('hide', 'show');
-    }
-    if (code.innerText)
-      return;
-    code.innerText = `Loading ${docID}.mac...`;
-    code.classList.add('highlight');
-    fetch(`/{{ site.code_dir }}/geometry/${docID}.mac`)
-      .then(response => response.text())
-      .then(data => {
-        code.innerText = data;
-        highlightMaxima(code);
-      });
-  };
-});
-
 // quick-and-dirty highlighting for Maxima console
 document.querySelectorAll("code.language-maxima-console").forEach(function(e) {
   var s = e.innerHTML;
@@ -622,11 +551,11 @@ document.querySelectorAll("code.language-maxima-console").forEach(function(e) {
 });
 </script>
 
-[imo2019p2.mac]: /{{ site.code_dir }}/geometry/imo2019p2.mac
-[imo2019p2e3.mac]: /{{ site.code_dir }}/geometry/imo2019p2e3.mac
-[imo2019p6.mac]: /{{ site.code_dir }}/geometry/imo2019p6.mac
-[imo2019p6e4.mac]: /{{ site.code_dir }}/geometry/imo2019p6e4.mac
-[geometry.mac]: /{{ site.code_dir }}/geometry/geometry.mac
+[geometry.mac]: https://github.com/xiw/geometry/blob/master/lib/geometry.mac
+[imo2019p2.mac]: https://github.com/xiw/geometry/blob/master/imo2019/imo2019p2.mac
+[imo2019p2e3.mac]: https://github.com/xiw/geometry/blob/master/imo2019/imo2019p2e3.mac
+[imo2019p6.mac]: https://github.com/xiw/geometry/blob/master/imo2019/imo2019p6.mac
+[imo2019p6e4.mac]: https://github.com/xiw/geometry/blob/master/imo2019p6e4.mac
 [IMO 2019]: https://www.imo2019.uk/
 [IMO Grand Challenge]: https://imo-grand-challenge.github.io/
 [Lean]: https://leanprover.github.io/
