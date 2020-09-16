@@ -5,6 +5,7 @@ author: "Xi Wang"
 tags: geometry
 cindy: true
 latex: true
+highlight: [maxima, maxima-console]
 ---
 
 The [IMO Grand Challenge] aims to "build an AI that can win a gold
@@ -504,52 +505,6 @@ Another important factor is [how these problems will be encoded formally](https:
 
 **Acknowledgments**: Luke Nelson, Emina Torlak, and Zhilei Xu
 provided feedback on a draft of this post.
-
-<script type="text/javascript">
-// quick-and-dirty highlighting for Maxima code
-function highlightMaxima(e) {
-  var funcs = ["conjugate", "declare", "determinant", "eliminate", "equal",
-               "error", "first", "is", "lambda", "load", "length", "map",
-               "matrix", "not", "quit", "ratsimp", "rhs", "second", "solve",
-               "sublist"];
-  var constants = ["complex", "real", "true"];
-  var keywords = ["else", "if", "then"];
-  var lines = e.innerText.split(/\r?\n/).map(line => {
-    // comments
-    if (line.startsWith('/*') || line.startsWith(' *') || line.endsWith('*/'))
-      return `<span class="c">${line}</span>`;
-    // strings
-    line = line.replace(/(".*?")/g, '<span class="s">$1</span>');
-    // built-in constants
-    line = line.replace(/(%[a-z]*)/g, '<span class="no">$1</span>');
-    for (var tmpl of constants)
-      line = line.replace(new RegExp(`([\\s])(${tmpl})(\\s*[\\(\\);,\\s])`, 'g'), '$1<span class="no">$2</span>$3');
-    // built-in functions
-    for (var tmpl of funcs)
-      line = line.replace(new RegExp(`(${tmpl})(\\s*[\\(\\);,])`, 'g'), '<span class="nb">$1</span>$2');
-    // keywords
-    for (var tmpl of keywords)
-      line = line.replace(new RegExp(`(${tmpl})(\\s)`, 'g'), '<span class="k">$1</span>$2');
-    return line;
-  });
-  e.innerHTML = lines.join('\n');
-  e.classList.add('highlight');
-}
-
-document.querySelectorAll("code.language-maxima").forEach(highlightMaxima);
-
-// quick-and-dirty highlighting for Maxima console
-document.querySelectorAll("code.language-maxima-console").forEach(function(e) {
-  var s = e.innerHTML;
-  // highlight true
-  s = s.replace(/(\(%[o][0-9]+\)\s*)(true)/g, '$1<span class="gs">$2</span>');
-  // prompts
-  s = s.replace(/^([%])/g, '<span class="gp">$1</span>');
-  s = s.replace(/(\(%[io][0-9]+\))/g, '<span class="gp">$1</span>');
-  e.innerHTML = s;
-  e.classList.add('highlight');
-});
-</script>
 
 [geometry.mac]: https://github.com/xiw/geometry/blob/master/lib/geometry.mac
 [imo2019p2.mac]: https://github.com/xiw/geometry/blob/master/imo2019/imo2019p2.mac

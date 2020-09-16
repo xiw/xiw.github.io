@@ -1,4 +1,4 @@
-{% if page.cindy %}
+{%- if page.cindy -%}
 <style>
 .cindy-canvas {
   width:  640px;
@@ -18,7 +18,6 @@ var defaultAppearance = {
     lineColor: [0, 0, 0],
     lineSize: 2,
 };
-
 // set up scaling
 window.addEventListener("load", (e) => {
   function onresize() {
@@ -36,12 +35,41 @@ window.addEventListener("load", (e) => {
   onresize();
 });
 </script>
-{% endif %}
-{% if page.latex %}
+{%- endif -%}
+
+{%- if page.d3 -%}
+<script src="{{ "/assets/dist/d3.min.js" | relative_url }}"></script>
+{%- endif -%}
+
+{%- if page.highlight -%}
+<script defer src="{{ "/assets/dist/highlight/highlight.min.js" | relative_url }}"></script>
+{%- for lang in page.highlight -%}
+{% capture lang_url %}/assets/dist/highlight/languages/{{ lang }}.min.js{% endcapture %}
+<script defer src="{{ lang_url | relative_url }}"></script>
+{%- endfor -%}
+<script>
+document.addEventListener('DOMContentLoaded', (event) => {
+  // Highlight code blocks skipped by Rouge.
+  document.querySelectorAll('pre:not(.highlight) code').forEach((block) => {
+    hljs.highlightBlock(block);
+    block.classList.add('highlight');
+  });
+  // Use Jekyll's CSS.
+  [
+    ['hljs-built_in', 'nb'],
+    ['hljs-comment' , 'c'],
+    ['hljs-keyword' , 'k'],
+    ['hljs-literal' , 'no'],
+    ['hljs-meta'    , 'gp'],
+    ['hljs-number'  , 'm'],
+    ['hljs-string'  , 's'],
+  ].forEach(([k, v]) => document.querySelectorAll('.' + k).forEach(e => e.classList.add(v)));
+});
+</script>
+{%- endif -%}
+
+{%- if page.latex -%}
 <link rel="stylesheet" href="{{ "/assets/dist/katex/katex.min.css" | relative_url }}">
 <script defer src="{{ "/assets/dist/katex/katex.min.js" | relative_url }}"></script>
 <script defer src="{{ "/assets/dist/katex/contrib/auto-render.min.js" | relative_url }}" onload="renderMathInElement(document.body);"></script>
-{% endif %}
-{% if page.d3 %}
-<script src="{{ "/assets/dist/d3.min.js" | relative_url }}"></script>
-{% endif %}
+{%- endif -%}

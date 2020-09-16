@@ -3,6 +3,7 @@ layout: post
 title: "The shifting range in RISC-V"
 author: "Xi Wang"
 tags: RISC-V
+highlight: [riscvasm]
 ---
 
 There are several commonly used RISC-V
@@ -10,7 +11,7 @@ There are several commonly used RISC-V
 with 32-bit immediates.
 Below is an example of loading a 32-bit immediate
 into a register using `lui`/`addi`:
-```
+```riscvasm
 lui	rd,imm[31:12]
 addi	rd,rd,imm[11:0]
 ```
@@ -102,7 +103,7 @@ to find the lower and upper bounds of the reachable range
 (you may also use SMT or the Z3 API directly).
 The output of the above program is:
 
-```
+```racket
 (model
  [lower (bv #xffffffff7ffff800 64)]
  [upper (bv #x000000007ffff7ff 64)])

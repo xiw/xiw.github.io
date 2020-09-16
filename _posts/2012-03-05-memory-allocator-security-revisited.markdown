@@ -163,7 +163,7 @@ the two pointers `p` (i.e., `node->first_evail`) and `q` (i.e.,
 `node->endp`) point to the start and the end of a memory block,
 respectively.
 
-``` diff r63806 http://svn.apache.org/viewvc/apr/apr/trunk/memory/unix/apr_pools.c?r1=63806&r2=63805
+```diff
 -    endp = node->first_avail + size;
 -    if (endp < node->endp) {
 +    if (size < node->endp - node->first_avail) { 
