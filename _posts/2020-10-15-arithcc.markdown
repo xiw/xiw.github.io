@@ -1,0 +1,73 @@
+---
+layout: post
+title: "Correctness of a compiler for arithmetic expressions in Lean"
+author: "Xi Wang"
+tags: compiler verification
+latex: true
+highlight: [lean]
+---
+
+"Correctness of a compiler for arithmetic expressions" ([McCarthy and Painter 1967])
+describes the first proof of compiler correctness.
+To make it easier to play with the proof,
+I coded it up using the [Lean theorem prover].
+
+The Lean code is self-explanatory, so I won't go into the details here.
+
+- [Browse the Lean code](https://github.com/xiw/arithcc/blob/master/src/arithcc.lean) on GitHub.
+
+- [Run in the browser](https://leanprover-community.github.io/lean-web-editor/#url=https%3A%2F%2Fraw.githubusercontent.com%2Fxiw%2Farithcc%2Fmaster%2Fsrc%2Farithcc.lean) (laptop or desktop recommended;
+tested with Lean/mathlib 3.21.0c).
+
+Lean's support for
+[calculational proofs](https://leanprover-community.github.io/extras/calc.html)
+is particularly nice for mirroring the proof in the paper.
+For example, below is an excerpt of the proof in the paper:
+
+$$\begin{aligned}
+\zeta_1 & = \mathit{outcome}(\mathit{compile}(s1(e),t),\eta) \\
+        & =_t a(\mathit{ac}, \upsilon_1, \eta) & \textrm{Induction Hypothesis}
+\end{aligned}$$
+
+Here's the corresponding part in Lean:
+
+```lean
+calc ζ₁
+    = outcome (compile map e_s₁ t) η : by cc
+... ≃[t] {ac := ν₁, ..η}             : by apply e_ih_s₁; assumption
+```
+
+## Typos
+
+The [reprint version][McCarthy and Painter 1967] of the paper contains a number of typos
+(not present in the original version):
+
+- Theorem 1: "$$c(\mathit{loc}(v, \eta) = c(v, \xi)$$" should be
+  "$$c(\mathit{loc}(v, \mathit{map}), \eta) = c(v, \xi)$$."
+
+- Section 5.III, under "$$\zeta_2 = \mathit{outcome}(\mathit{mksto}(t), \zeta_1)$$":
+  "$$a(t, \upsilon_1), \zeta_1)$$" should be "$$a(t, \upsilon_1, \zeta_1)$$."
+
+- Section 5.III, next to "$$c(\mathit{loc}(\upsilon, \mathit{map}), \zeta_2)$$":
+  "$$c(\mathit{loc}(\upsilon), \mathit{map})a(t, \upsilon_1, \eta))$$" should be
+  "$$c(\mathit{loc}(\upsilon, \mathit{map}), a(t, \upsilon_1, \eta))$$."
+
+
+## Links
+
+- Formalization ([Milner and Weyhrauch 1972]) using LCF.
+
+- Xavier Leroy's [course](https://xavierleroy.org/courses/EUTypes-2019/)
+  on proving the correctness of a compiler for IMP.
+
+- The [CompCert](http://compcert.inria.fr/) C verified compiler.
+
+- [Alive](https://github.com/AliveToolkit/alive2) and
+  [Souper](https://github.com/google/souper) for verified LLVM optimizations.
+
+- [Jitterbug](https://unsat.cs.washington.edu/projects/jitterbug/)
+  for verifying BPF just-in-time compilers in the Linux kernel.
+
+[Lean theorem prover]: https://leanprover-community.github.io/
+[McCarthy and Painter 1967]: http://jmc.stanford.edu/articles/mcpain/mcpain.pdf
+[Milner and Weyhrauch 1972]: http://www.cs.umd.edu/~hjs/pubs/compilers/archive/mi72-mil-wey.pdf
